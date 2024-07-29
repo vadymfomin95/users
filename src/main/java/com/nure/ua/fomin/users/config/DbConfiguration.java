@@ -44,10 +44,9 @@ public class DbConfiguration {
                                                  DataSourcesProperties dataSourcesProperties) {
         return dataSourcesProperties.getDataSources()
                 .stream()
-                .map(dataSourceConfig -> new UserRepositoryImpl(dataSource, dataSourceConfig))
-                .map(userRepository -> {
+                .map(dataSourceConfig -> {
                     AspectJProxyFactory proxyFactory = new AspectJProxyFactory();
-                    proxyFactory.setTarget(userRepository);
+                    proxyFactory.setTarget(new UserRepositoryImpl(dataSource, dataSourceConfig));
                     proxyFactory.addAspect(DataSourceAspect.class);
                     return (UserRepository) proxyFactory.getProxy();
                 })

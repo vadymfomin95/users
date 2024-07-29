@@ -1,27 +1,3 @@
-ua:
- nure:
-   fomin:
-     data-sources:
-     - name: data-base-1
-       strategy: postgres
-       url: jdbc:postgresql://localhost:5432/userdb
-       table: users
-       user: postgres
-       password: postgres
-       mapping:
-        id: user_id
-        username: login
-        name: first_name
-        surname: last_name
-     - name: data-base-2
-       strategy: h2
-       url: jdbc:h2:~/users
-       table: users_table
-       user: sa
-       password:
-       mapping:
-         id: ldap_login
-         username: ldap_login
-         name: name
-         surname: surname
-
+spring:
+  application:
+    name: users
