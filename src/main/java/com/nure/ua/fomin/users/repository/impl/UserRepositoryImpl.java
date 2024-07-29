@@ -1,10 +1,10 @@
 package com.nure.ua.fomin.users.repository.impl;
 
+import com.nure.ua.fomin.users.aspect.MultipleDataSource;
 import com.nure.ua.fomin.users.config.properties.DataSourcesProperties;
 import com.nure.ua.fomin.users.entity.Filter;
 import com.nure.ua.fomin.users.entity.User;
 import com.nure.ua.fomin.users.repository.UserRepository;
-import com.nure.ua.fomin.users.utils.DataSourceContextHolder;
 import com.nure.ua.fomin.users.utils.ReflectionUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -42,17 +42,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @MultipleDataSource
     public List<User> getAll() {
-        DataSourceContextHolder.setCurrentDataSource(dataSourceConfig.getName());
-        List<User> userEntities = jdbcTemplate.query(String.format("select * from %s", dataSourceConfig.getTable()), rowMapper);
-        DataSourceContextHolder.clear();
-        return userEntities;
+        return jdbcTemplate.query(String.format("select * from %s", dataSourceConfig.getTable()), rowMapper);
     }
 
     @Override
+    @MultipleDataSource
     public List<User> search(List<Filter> searchCriteria) {
-        DataSourceContextHolder.setCurrentDataSource(dataSourceConfig.getName());
-
         Map<String, String> sqlParameters = searchCriteria
                 .stream()
                 .filter(filter -> ReflectionUtils.getValue(dataSourceConfig.getMapping(), filter.getName()) != null)
@@ -70,9 +67,6 @@ public class UserRepositoryImpl implements UserRepository {
         String query = String.format("select * from %s where %s", dataSourceConfig.getTable(), filteringPart);
 
         SqlParameterSource namedParameters = new MapSqlParameterSource().addValues(sqlParameters);
-        List<User> userEntities = namedParameterJdbcTemplate.query(query, namedParameters, rowMapper);
-
-        DataSourceContextHolder.clear();
-        return userEntities;
+        return namedParameterJdbcTemplate.query(query, namedParameters, rowMapper);
     }
 }

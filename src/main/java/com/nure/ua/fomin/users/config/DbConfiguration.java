@@ -1,10 +1,12 @@
 package com.nure.ua.fomin.users.config;
 
+import com.nure.ua.fomin.users.aspect.DataSourceAspect;
 import com.nure.ua.fomin.users.config.properties.DataSourcesProperties;
 import com.nure.ua.fomin.users.repository.UserRepository;
 import com.nure.ua.fomin.users.repository.impl.UserRepositoryImpl;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
+import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +45,12 @@ public class DbConfiguration {
         return dataSourcesProperties.getDataSources()
                 .stream()
                 .map(dataSourceConfig -> new UserRepositoryImpl(dataSource, dataSourceConfig))
+                .map(userRepository -> {
+                    AspectJProxyFactory proxyFactory = new AspectJProxyFactory();
+                    proxyFactory.setTarget(userRepository);
+                    proxyFactory.addAspect(DataSourceAspect.class);
+                    return (UserRepository) proxyFactory.getProxy();
+                })
                 .collect(Collectors.toList());
     }
 
